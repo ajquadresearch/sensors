@@ -48,6 +48,17 @@ void loop()
 	if ((time - lastPrint) >= printTimer)
 	{
 		lastPrint = time;
-		Serial.println(rollD);
+		Serial.print(rollD);
+		Serial.print(", ");
+		Serial.print(pitchD);
+		Serial.print(", ");
+		Serial.print(yawD);
+		Serial.print(", ");
+		Serial.print(roll);
+		Serial.print(", ");
+		Serial.print(pitch);
+		Serial.print(", ");
+		Serial.println(yaw);
+
 	}
 }
