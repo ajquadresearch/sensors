@@ -120,7 +120,7 @@ void loop(void)
 #endif
 
   // Print the sensor data
-  Serial.print("Raw:");
+  // Serial.print("Raw:");
 #if AHRS_VARIANT == NXP_FXOS8700_FXAS21002
     Serial.print(accelmag.accel_raw.x);
     Serial.print(',');
