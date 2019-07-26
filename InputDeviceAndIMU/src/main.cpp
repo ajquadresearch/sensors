@@ -1,5 +1,7 @@
 #include <Arduino.h>
-#include <imu.hpp>
+#include "imu.hpp"
+#include "DesiredAngles.hpp"
+
 
 // Printing 
 elapsedMicros time;
@@ -23,8 +25,12 @@ const int ch6 = 29; 		//Right Nob
 unsigned long timer[7]; 	          //Timer [us]
 volatile int R[7] = {0};	          //Hand-Held Receiver Signals [us]
 
+// Angles from IMU 
 extern float pitch, roll, yaw;     //Madgwick Euler Angles [deg]
 extern float pitchD, rollD, yawD;  //Gyro Body Angular Rates [deg/s]
+
+// Desired angles 
+extern float pitchDesD, rollDesD, yawDesD;
 
 
 //External Interrupts//
@@ -56,7 +62,7 @@ void loop()
   if( (time - lastPrint) > printTime)
   {
     lastPrint = time;
-    Serial.print(R[1]);
+    Serial.print(pitchDesD);
     Serial.print(", ");
     Serial.println(pitch);
   }
@@ -65,6 +71,7 @@ void loop()
   {
     lastUpdate = time; 
     GetIMU();
+    GetDesiredRates();
   }
 
 
