@@ -1,3 +1,7 @@
+/////////////////////////////////////////////////////////////////////////////////
+//THIS SUBROUTINE DETERMINES THE ACTUAL ATTITUDE OF THE QUADCOPTER USING AN IMU//
+/////////////////////////////////////////////////////////////////////////////////
+
 #include <Adafruit_Sensor.h> 				
 #include <Adafruit_FXAS21002C.h>
 #include <Adafruit_FXOS8700.h>
@@ -46,7 +50,7 @@ void ImuIntilization()
 
 }
 
- void GetIMU()
+ void GetActualAttitude()
  {
 
      sensors_event_t gyro_event;
