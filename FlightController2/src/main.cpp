@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include "ActualAttitude.hpp"
 #include "DesiredAttitude.hpp"
+#include "AttitudeController.hpp"
 
 /////////////////////////////////////////////////////////
 //GLOBAL VARIABLES 
@@ -13,13 +14,22 @@ const int printTimer = 10000;
 int lastPrint = 0;
 const int led = 13;
 
-// Filter sample rate
+// Filter sample Rate of 250 corrections per second 
 const int updateTime = 4000;
 int lastUpdate = 0;
 
 // IMU variable outputs 
 extern float pitchActual, rollActual, yawActual;
 extern float pitchRateActual, rollRateActual, yawRateActual;
+
+// Desired attitude 
+extern float pitchRateDesired, rollRateDesired, yawRateDesired;
+
+// ESC PULSES 
+extern int escPulse1;
+extern float pitchPulseRate;
+
+
 
 //Receiver Pins//
 const int ch1 = 24;  		//Right Stick - Horizontal (Roll)
@@ -33,10 +43,6 @@ const int ch6 = 29;  		//Right Nob
 //Receiver Signals// 			  
 unsigned long timer[7] = {0}; 	            //Timer [us]
 volatile int R[7] = {0};	          		//Hand-Held Receiver Signals [us]
-
-// Desired attitude 
-extern float pitchDesired, rollDesired, yawDesired;    		            //Desired Angles [deg]
-extern float pitchRateDesired, rollRateDesired, yawRateDesired; 		//Desired Rates [deg/s]
 
 //External Interrupts//
 void ch1Int(){  if (digitalReadFast(ch1)) timer[1] = time;  else R[1] = time - timer[1];}
@@ -71,7 +77,7 @@ void setup() {
 }
 
 void loop() 
-{
+{	
 	// Update pulse to motors every 250hz
 	if ((time - lastUpdate) > updateTime)
 	{
@@ -80,11 +86,15 @@ void loop()
 		// Get the rates and angles
 		GetActualAttitude();
 		GetDesiredAttitude();
+		GetAttitudeController();
 	}
 
 	if ((time - lastPrint) >= printTimer && debug == true)
 	{
 		lastPrint = time;
-		Serial.println(rollRateDesired);
+
+		Serial.print(escPulse1);
+		Serial.print(", ");
+		Serial.println(pitchPulseRate);
 	}
 }
