@@ -25,6 +25,11 @@ Adafruit_FXAS21002C gyro = Adafruit_FXAS21002C(0x0021002C);
 Adafruit_FXOS8700 accelmag = Adafruit_FXOS8700(0x8700A, 0x8700B);
 elapsedMicros elapsedTime;
 
+float accelerationX, accelerationY, accelerationZ;
+float averageZ = 0, sumZ = 0;
+float storage[25] = {};
+int counter = 0;
+
 
 /////////////////////////////////////////
 // IMU Calibration
@@ -62,10 +67,16 @@ elapsedMicros elapsedTime;
  bool waitSerial = true;
 
 // Print Angles 
- bool angle = true; 
+ bool angle = false; 
 
 // Print Rates 
 bool rates = false; 
+
+// Print Accelerometer 
+bool accelerometer = false; 
+// average
+bool average = true;
+
 
 ///////////////////////////////////
 // Variables
@@ -121,9 +132,24 @@ void getIMU()
 	 pitch = filter.getRoll();
 	 roll = filter.getPitch();
 	 yaw = filter.getYaw();
-	 yaw_rate = gyro_event.gyro.z;
-	 pitch_rate = gyro_event.gyro.x;
-	 roll_rate = gyro_event.gyro.y;
+	 yaw_rate = gz;
+	 pitch_rate = gx;
+	 roll_rate = gy;
+
+	 accelerationX = -accel_event.acceleration.y;
+	 accelerationY = -accel_event.acceleration.x;
+	 accelerationZ = accel_event.acceleration.z;
+
+
+	 // Average the acceleration data 
+	 sumZ += accelerationZ;
+	 sumZ -= storage[counter];
+	 averageZ = sumZ/25;
+	 storage[counter] = accelerationZ;
+	 if(counter == 24)
+	 	counter = 0;
+	 else
+	 	counter++;
 }
 
 ////////////////////////////////////////////////
@@ -148,14 +174,14 @@ void setup() {
 	Serial.println(updateTime);
 	delay(1000);
 
-	if(!gyro.begin(GYRO_RANGE_250DPS))
+	if(!gyro.begin(GYRO_RANGE_500DPS))
 	{
 		/* There was a problem detecting the gyro ... check your connections */
 		Serial.println("Ooops, no gyro detected ... Check your wiring!");
 		while(1);
 	}
 
-	if(!accelmag.begin(ACCEL_RANGE_4G))
+	if(!accelmag.begin(ACCEL_RANGE_8G))
 	{
 		Serial.println("Ooops, no FXOS8700 detected ... Check your wiring!");
 		while(1);
@@ -199,18 +225,41 @@ if ((elapsedTime - lastPrint) >= printTimer)
 	}
 	if (rates == true)
 	{
-		Serial.println();
 		Serial.print("Time Elapsed ");
 	 	Serial.println(elapsedTime);
 		Serial.print("Pitch Rate: ");
-  	Serial.println(pitch_rate);
-  	Serial.print("Roll Rate: ");
-  	Serial.println(roll_rate);
-  	Serial.print("Yaw Rate: ");
-  	Serial.print(yaw_rate);
+  		Serial.println(pitch_rate);
+  		Serial.print("Roll Rate: ");
+  		Serial.println(roll_rate);
+  		Serial.print("Yaw Rate: ");
+  		Serial.print(yaw_rate);
 		Serial.println();
 	}
+	if(accelerometer == true)
+	{
+		Serial.print("Time Elapsed ");
+	 	Serial.println(elapsedTime);
+		Serial.print("Acc X: ");
+  		Serial.println(accelerationX);
+  		Serial.print("Acc Y: ");
+  		Serial.println(accelerationY);
+  		Serial.print("Acc Z: ");
+  		Serial.print(accelerationZ);
+		Serial.println();
 
+	}
+	if(average == true)
+	{
+		Serial.print("Time Elapsed ");
+	 	Serial.println(elapsedTime);
+		Serial.print("Average: ");
+  		Serial.println(averageZ);
+		Serial.print("Acc Z:");
+		Serial.println(accelerationZ);
+		Serial.print("SumZ: ");
+		Serial.print(sumZ);
+
+	}
 	lastPrint = elapsedTime;
 }
 }
